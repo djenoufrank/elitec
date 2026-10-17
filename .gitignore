@@ -1,0 +1,31 @@
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+!**/.env.example
+.gitconfig
+*.pem
+*.key
+credentials.json
+
+# JavaScript dependencies and builds
+node_modules/
+build/
+dist/
+coverage/
+
+# Python environments, caches and test output
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs and local editor files
+*.log
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
