@@ -4,21 +4,23 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SERVICE_CATEGORIES } from "@/lib/data";
 import { useT } from "@/lib/i18n";
+import PageHeroMedia from "@/components/layout/PageHeroMedia";
 
 export default function Services() {
   const { t } = useT();
   return (
     <div>
-      <section className="py-20 elitec-hero-grid">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-sm uppercase tracking-wider text-[#0057B8] font-semibold mb-3">{t("services.kicker")}</p>
-          <h1 data-testid="services-headline" className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight max-w-3xl">
+      <section className="site-page-hero">
+        <PageHeroMedia />
+        <div className="site-page-hero__content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <p className="text-sm uppercase tracking-wider text-[#9bd4ff] font-semibold mb-3">{t("services.kicker")}</p>
+          <h1 data-testid="services-headline" className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight max-w-3xl text-white">
             {t("services.headline")}
           </h1>
-          <p className="mt-5 text-lg text-muted-foreground max-w-2xl">{t("services.sub")}</p>
+          <p className="mt-5 text-lg text-white/85 max-w-2xl">{t("services.sub")}</p>
           <div className="mt-7 flex gap-3 flex-wrap">
             <Link to="/calculator"><Button data-testid="services-calc-btn" className="bg-[#0057B8] hover:bg-[#004a9c] text-white">{t("services.calc")} <ArrowRight className="ml-2 h-4 w-4" /></Button></Link>
-            <Link to="/contact"><Button data-testid="services-contact-btn" variant="outline">{t("services.quote")}</Button></Link>
+            <Link to="/contact"><Button data-testid="services-contact-btn" variant="outline" className="bg-white/95 border-white text-[#0057B8] hover:bg-white">{t("services.quote")}</Button></Link>
           </div>
         </div>
       </section>

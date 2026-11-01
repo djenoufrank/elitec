@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Phone, Mail, MapPin, Send, Loader2, CheckCircle2, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -7,10 +8,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { customerService } from "@/services/CustomerService";
 import { COMPANY, SERVICE_CATEGORIES } from "@/lib/data";
 import { useT } from "@/lib/i18n";
+import PageHeroMedia from "@/components/layout/PageHeroMedia";
 
 export default function Contact() {
   const { t } = useT();
-  const [form, setForm] = useState({ name: "", email: "", company: "", phone: "", service: "", message: "" });
+  const location = useLocation();
+  const quoteLead = location.state || {};
+  const [form, setForm] = useState({
+    name: quoteLead.name || "", email: quoteLead.email || "", company: "", phone: "", service: "",
+    message: quoteLead.quoteId ? `${t("contact.calculatorMessage")} ${quoteLead.monthly} € ${t("calc.month")}.` : "",
+    quote_id: quoteLead.quoteId || null,
+  });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -24,10 +32,14 @@ export default function Contact() {
     }
     setLoading(true);
     try {
-      await customerService.sendContactMessage(form);
+      const response = await customerService.sendContactMessage(form);
+      if (!response.data?.email_sent) {
+        toast.error(t("contact.emailNotSent") + " " + COMPANY.email + ".");
+        return;
+      }
       setSuccess(true);
       toast.success(t("contact.sendOkToast"));
-      setForm({ name: "", email: "", company: "", phone: "", service: "", message: "" });
+      setForm({ name: "", email: "", company: "", phone: "", service: "", message: "", quote_id: null });
     } catch {
       toast.error(`${t("contact.sendErrToast")} ${COMPANY.email}.`);
     } finally {
@@ -37,20 +49,21 @@ export default function Contact() {
 
   return (
     <div>
-      <section className="py-20 elitec-hero-grid">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-sm uppercase tracking-wider text-[#0057B8] font-semibold mb-3">{t("contact.kicker")}</p>
-          <h1 data-testid="contact-headline" className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight max-w-3xl">
+      <section className="site-page-hero">
+        <PageHeroMedia />
+        <div className="site-page-hero__content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <p className="text-sm uppercase tracking-wider text-[#9bd4ff] font-semibold mb-3">{t("contact.kicker")}</p>
+          <h1 data-testid="contact-headline" className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight max-w-3xl text-white">
             {t("contact.headline")}
           </h1>
-          <p className="mt-5 text-lg text-muted-foreground max-w-2xl">{t("contact.sub")}</p>
+          <p className="mt-5 text-lg text-white/85 max-w-2xl">{t("contact.sub")}</p>
         </div>
       </section>
 
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-3 gap-8">
           <div className="space-y-5 lg:col-span-1">
-            <a href={`tel:${COMPANY.phoneRaw}`} className="block">
+            {/* <a href={`tel:${COMPANY.phoneRaw}`} className="block">
               <Card className="border-border card-lift">
                 <CardContent className="p-5 flex items-start gap-4">
                   <div className="h-11 w-11 rounded-lg bg-[#0057B8]/10 flex items-center justify-center shrink-0">
@@ -63,7 +76,7 @@ export default function Contact() {
                   </div>
                 </CardContent>
               </Card>
-            </a>
+            </a> */}
             <a href={`mailto:${COMPANY.email}`} className="block">
               <Card className="border-border card-lift">
                 <CardContent className="p-5 flex items-start gap-4">
@@ -91,7 +104,7 @@ export default function Contact() {
                 </div>
               </CardContent>
             </Card>
-            <a href={COMPANY.whatsapp} target="_blank" rel="noreferrer" className="block">
+            {/* <a href={COMPANY.whatsapp} target="_blank" rel="noreferrer" className="block">
               <Card className="border-border card-lift">
                 <CardContent className="p-5 flex items-start gap-4">
                   <div className="h-11 w-11 rounded-lg bg-[#00C389]/15 flex items-center justify-center shrink-0">
@@ -104,7 +117,7 @@ export default function Contact() {
                   </div>
                 </CardContent>
               </Card>
-            </a>
+            </a> */}
             <Card className="border-border overflow-hidden">
               <iframe
                 title="Auvelais"
@@ -161,7 +174,7 @@ export default function Contact() {
                   <Button data-testid="contact-submit" type="submit" disabled={loading} className="bg-[#0057B8] hover:bg-[#004a9c] text-white h-11 px-6">
                     {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> {t("contact.sending")}</> : <>{t("contact.submit")} <Send className="ml-2 h-4 w-4" /></>}
                   </Button>
-                  <p className="text-xs text-muted-foreground">{t("contact.gdpr")}</p>
+                  <p className="text-xs text-muted-foreground">{t("contact.gdpr")} <a href="/privacy" className="text-[#0057B8] underline">{t("foot.privacy")}</a>.</p>
                 </form>
               )}
             </CardContent>

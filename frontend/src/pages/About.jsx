@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Target, Eye, Heart, Users, Award, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { IMAGES } from "@/lib/data";
+import PageHeroMedia from "@/components/layout/PageHeroMedia";
 import { useT } from "@/lib/i18n";
 
 const VALUES = [
@@ -21,23 +21,20 @@ export default function About() {
 
   return (
     <div>
-      <section className="py-20 lg:py-24 elitec-hero-grid">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <p className="text-sm uppercase tracking-wider text-[#0057B8] font-semibold mb-3">{t("about.kicker")}</p>
-            <h1 data-testid="about-headline" className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05]">
+      <section className="site-page-hero">
+        <PageHeroMedia />
+        <div className="site-page-hero__content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-24">
+          <div className="max-w-3xl">
+            <p className="text-sm uppercase tracking-wider text-[#b6e4ff] font-semibold mb-3">{t("about.kicker")}</p>
+            <h1 data-testid="about-headline" className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05] text-white">
               {t("about.headline")}
             </h1>
-            <p className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-xl">
+            <p className="mt-6 text-lg text-white/85 leading-relaxed max-w-xl">
               {t("about.sub")}
             </p>
             <div className="mt-8 flex gap-3 flex-wrap">
               <Link to="/contact"><Button data-testid="about-contact-btn" className="bg-[#0057B8] hover:bg-[#004a9c] text-white">{t("about.cta.contact")}</Button></Link>
-              <Link to="/case-studies"><Button data-testid="about-cases-btn" variant="outline">{t("about.cta.cases")}</Button></Link>
             </div>
-          </div>
-          <div className="rounded-2xl overflow-hidden border border-border shadow-xl">
-            <img src={IMAGES.hero} alt="Elitec" className="w-full h-[420px] object-cover" />
           </div>
         </div>
       </section>

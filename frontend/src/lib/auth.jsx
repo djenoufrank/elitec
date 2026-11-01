@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { formatApiError } from "@/services/ApiClient";
 import { authService } from "@/services/AuthService";
+import { FEATURES } from "@/lib/features";
 
 const AuthContext = createContext({
   user: null, token: null, loading: true,
@@ -16,6 +17,11 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let cancelled = false;
+    if (!FEATURES.authentication) {
+      setUser(null);
+      setLoading(false);
+      return () => { cancelled = true; };
+    }
     async function refresh() {
       if (!token) { setUser(null); setLoading(false); return; }
       try {

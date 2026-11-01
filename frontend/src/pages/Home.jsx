@@ -2,7 +2,8 @@ import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle2, Shield, Clock, Award, Wallet, Zap, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { SERVICE_CATEGORIES, INDUSTRIES, PARTNERS, TESTIMONIALS, IMAGES, WHY_ELITEC } from "@/lib/data";
+import { SERVICE_CATEGORIES, PARTNERS, TESTIMONIALS, WHY_ELITEC } from "@/lib/data";
+import PageHeroMedia from "@/components/layout/PageHeroMedia";
 import { useT } from "@/lib/i18n";
 
 const WhyIcons = { Clock, Award, Wallet, Zap };
@@ -12,16 +13,17 @@ export default function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative overflow-hidden elitec-hero-grid">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 grid lg:grid-cols-2 gap-12 items-center relative">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0057B8]/10 text-[#0057B8] text-xs font-medium mb-6" data-testid="hero-badge">
+      <section className="site-page-hero">
+        <PageHeroMedia />
+        <div className="site-page-hero__content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#b6e4ff] text-xs font-medium mb-6" data-testid="hero-badge">
               <Shield className="h-3.5 w-3.5" /> {t("home.badge")}
             </div>
-            <h1 data-testid="hero-headline" className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05]">
+            <h1 data-testid="hero-headline" className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05] text-white">
               {t("home.hero.title1")} <span className="elitec-gradient-text">{t("home.hero.title2")}</span>
             </h1>
-            <p data-testid="hero-subhead" className="mt-6 text-lg text-muted-foreground max-w-xl leading-relaxed">
+            <p data-testid="hero-subhead" className="mt-6 text-lg text-white/85 max-w-xl leading-relaxed">
               {t("home.hero.sub")}
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -31,33 +33,18 @@ export default function Home() {
                 </Button>
               </Link>
               <Link to="/calculator">
-                <Button data-testid="hero-cta-calculator" size="lg" variant="outline" className="h-12 px-6 border-[#0057B8] text-[#0057B8] hover:bg-[#0057B8]/5">
+                <Button data-testid="hero-cta-calculator" size="lg" variant="outline" className="h-12 px-6 bg-white/95 border-white text-[#0057B8] hover:bg-white">
                   {t("home.cta.calc")}
                 </Button>
               </Link>
             </div>
             <div className="mt-10 grid grid-cols-3 gap-4 max-w-md">
-              {[["10+", t("home.stats.years")],["95.5%", t("home.stats.clients")],["99.9%", t("home.stats.uptime")]].map(([n,l]) => (
+              {[['10+', t("home.stats.years")],['95.5%', t("home.stats.clients")],['99.9%', t("home.stats.uptime")]].map(([n,l]) => (
                 <div key={l} className="text-left">
-                  <div className="text-2xl sm:text-3xl font-bold text-[#0057B8]">{n}</div>
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">{l}</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-[#b6e4ff]">{n}</div>
+                  <div className="text-xs uppercase tracking-wider text-white/70">{l}</div>
                 </div>
               ))}
-            </div>
-          </div>
-          <div className="relative">
-            <div className="absolute -inset-6 bg-gradient-to-br from-[#0057B8]/20 via-[#00A3E0]/15 to-[#00C389]/15 blur-3xl rounded-3xl" />
-            <div className="relative rounded-2xl overflow-hidden border border-border shadow-2xl">
-              <img src={IMAGES.hero} alt="Elitec IT solutions" className="w-full h-[440px] object-cover" />
-              <div className="absolute bottom-4 left-4 right-4 backdrop-blur-md bg-background/80 border border-border rounded-xl p-4 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-[#00C389]/20 flex items-center justify-center">
-                  <CheckCircle2 className="h-5 w-5 text-[#00C389]" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">{t("common.live247")}</p>
-                  <p className="text-xs text-muted-foreground">{t("common.allOk")}</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -120,28 +107,6 @@ export default function Home() {
                     </ul>
                   </CardContent>
                 </Card>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Industries */}
-      <section className="py-20 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mb-10">
-            <p className="text-sm uppercase tracking-wider text-[#0057B8] font-semibold mb-3">{t("home.industries.kicker")}</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">{t("home.industries.title")}</h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {INDUSTRIES.map((i) => {
-              const Icon = i.icon;
-              return (
-                <div key={i.id} data-testid={`industry-card-${i.id}`} className="card-lift bg-background border border-border rounded-xl p-5">
-                  <Icon className="h-6 w-6 text-[#0057B8] mb-3" />
-                  <p className="font-semibold">{t(i.nameKey)}</p>
-                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{t(i.blurbKey)}</p>
-                </div>
               );
             })}
           </div>

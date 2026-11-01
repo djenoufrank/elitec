@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { contentService } from "@/services/ContentService";
 import { useT } from "@/lib/i18n";
+import PageHeroMedia from "@/components/layout/PageHeroMedia";
 
 export default function Blog() {
   const { t } = useT();
@@ -31,10 +32,11 @@ export default function Blog() {
 
   return (
     <div>
-      <section className="py-16 lg:py-20 elitec-hero-grid">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-sm uppercase tracking-wider text-[#0057B8] font-semibold mb-3">{t("blog.kicker")}</p>
-          <h1 data-testid="blog-headline" className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight max-w-3xl">
+      <section className="site-page-hero">
+        <PageHeroMedia />
+        <div className="site-page-hero__content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+          <p className="text-sm uppercase tracking-wider text-[#b6e4ff] font-semibold mb-3">{t("blog.kicker")}</p>
+          <h1 data-testid="blog-headline" className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight max-w-3xl text-white">
             {t("blog.headline")}
           </h1>
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -48,7 +50,7 @@ export default function Blog() {
             {categories.map((c) => (
               <button key={c} data-testid={`blog-cat-${c}`} onClick={() => setCat(c)}
                 className={`px-3 py-1.5 rounded-full text-sm border transition ${
-                  cat === c ? "bg-[#0057B8] text-white border-[#0057B8]" : "bg-background border-border hover:border-[#0057B8] hover:text-[#0057B8]"
+                  cat === c ? "bg-[#0057B8] text-white border-[#0057B8]" : "bg-background text-[#1f2937] border-border hover:border-[#0057B8] hover:text-[#0057B8]"
                 }`}>
                 {c === "All" ? t("common.all") : c}
               </button>

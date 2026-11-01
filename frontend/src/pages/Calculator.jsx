@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { Calculator as CalcIcon, Save, Send, Download, CheckCircle2, Loader2 } from "lucide-react";
+import { Calculator as CalcIcon, Send, Download, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { customerService } from "@/services/CustomerService";
 import { useT } from "@/lib/i18n";
+import { COMPANY } from "@/lib/data";
 
 // Pricing benchmarked against 2026 Belgian/EU MSP market rates
 const SUPPORT_LEVELS = { Basic: 25, Standard: 48, Premium: 80, Enterprise: 125 };
@@ -27,7 +29,11 @@ function fmt(n) {
 }
 
 export default function Calculator() {
-  const { t } = useT();
+  const { t, lang } = useT();
+  const [lead, setLead] = useState(null);
+  const [leadForm, setLeadForm] = useState({ first_name: "", last_name: "", email: "" });
+  const [starting, setStarting] = useState(false);
+  const [finishing, setFinishing] = useState(false);
   const [users, setUsers] = useState(50);
   const [supportLevel, setSupportLevel] = useState("Standard");
   const [cloud, setCloud] = useState({ "Microsoft 365": true, "Microsoft Azure": false, "Backup": true, "Disaster Recovery": false });
@@ -36,7 +42,6 @@ export default function Calculator() {
   const [workstations, setWorkstations] = useState(50);
   const [networkDevices, setNetworkDevices] = useState(8);
   const [coverage, setCoverage] = useState("business");
-  const [saving, setSaving] = useState(false);
 
   const supportLabels = {
     Basic: t("calc.support.basic"), Standard: t("calc.support.standard"),
@@ -75,45 +80,115 @@ export default function Calculator() {
   const toggleCloud = toggle(setCloud);
   const toggleSecurity = toggle(setSecurity);
 
-  const saveEstimate = async () => {
-    setSaving(true);
+  const estimatePayload = () => ({
+    users, support_level: supportLevel,
+    cloud_services: Object.keys(cloud).filter((k) => cloud[k]),
+    security_services: Object.keys(security).filter((k) => security[k]),
+    servers, workstations, network_devices: networkDevices,
+    support_coverage: coverageLabels[coverage],
+    monthly_total: monthly, annual_total: annual, breakdown,
+  });
+
+  useEffect(() => {
+    if (!lead?.id) return undefined;
+    const estimate = {
+      users, support_level: supportLevel,
+      cloud_services: Object.keys(cloud).filter((k) => cloud[k]),
+      security_services: Object.keys(security).filter((k) => security[k]),
+      servers, workstations, network_devices: networkDevices,
+      support_coverage: coverage,
+      monthly_total: monthly, annual_total: annual, breakdown,
+    };
+    const timeout = window.setTimeout(() => {
+      customerService.updateCalculatorLead(lead.id, estimate).catch(() => {});
+    }, 700);
+    return () => window.clearTimeout(timeout);
+  }, [lead?.id, users, supportLevel, cloud, security, servers, workstations, networkDevices, coverage, monthly, annual, breakdown]);
+
+  const startSimulation = async (event) => {
+    event.preventDefault();
+    setStarting(true);
     try {
-      await customerService.saveQuote({
-        users, support_level: supportLevel,
-        cloud_services: Object.keys(cloud).filter((k) => cloud[k]),
-        security_services: Object.keys(security).filter((k) => security[k]),
-        servers, workstations, network_devices: networkDevices,
-        support_coverage: coverageLabels[coverage],
-        monthly_total: monthly, annual_total: annual, breakdown,
+      const result = await customerService.startCalculatorLead({
+        ...leadForm,
+        first_name: leadForm.first_name.trim(),
+        last_name: leadForm.last_name.trim(),
+        email: leadForm.email.trim(),
       });
-      toast.success(t("calc.saved"));
-    } catch { toast.error(t("calc.saveErr")); }
-    finally { setSaving(false); }
+      setLead(result);
+    } catch {
+      toast.error(t("calc.lead.error"));
+    } finally {
+      setStarting(false);
+    }
+  };
+
+  const requestQuote = async () => {
+    setFinishing(true);
+    try {
+      const result = await customerService.completeCalculatorLead(lead.id, estimatePayload());
+      if (result.email_sent) {
+        toast.success(t("calc.lead.emailSent"));
+      } else {
+        toast.error(t("calc.lead.emailNotConfigured"));
+      }
+    } catch {
+      toast.error(t("calc.lead.error"));
+    } finally {
+      setFinishing(false);
+    }
   };
 
   const downloadEstimate = () => {
-    const lines = [
-      "ELITEC — ESTIMATION IT",
-      "==============================",
-      `${t("calc.users")}: ${users}`,
-      `${t("calc.supportLevel")}: ${supportLabels[supportLevel]}`,
-      `${t("calc.coverage")}: ${coverageLabels[coverage]}`,
-      `${t("calc.cloud")}: ${Object.keys(cloud).filter(k => cloud[k]).join(", ") || "—"}`,
-      `${t("calc.security")}: ${Object.keys(security).filter(k => security[k]).join(", ") || "—"}`,
-      `${t("calc.servers")}: ${servers}, ${t("calc.workstations")}: ${workstations}, ${t("calc.network")}: ${networkDevices}`,
-      "",
-      ...Object.entries(breakdown).map(([k, v]) => `  ${k}: ${fmt(v)} ${t("calc.month")}`),
-      "",
-      `${t("calc.yourEstimate")}: ${fmt(monthly)} ${t("calc.month")}`,
-      `${fmt(annual)} ${t("calc.annually")}`,
-      `${t("calc.recommended")}: ${pkg}`,
-    ].join("\n");
-    const blob = new Blob([lines], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = "elitec-estimate.txt"; a.click();
-    URL.revokeObjectURL(url);
+    const previousTitle = document.title;
+    const finishPrint = () => document.body.classList.remove("printing-estimate");
+    window.addEventListener("afterprint", finishPrint, { once: true });
+    document.body.classList.add("printing-estimate");
+    document.title = `Elitec - ${t("calc.yourEstimate")}`;
+    window.print();
+    window.setTimeout(finishPrint, 10000);
+    window.setTimeout(() => { document.title = previousTitle; }, 1000);
   };
+
+  if (!lead) {
+    return (
+      <div>
+        <section className="py-16 elitec-hero-grid">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p className="text-sm uppercase tracking-wider text-[#0057B8] font-semibold mb-3">{t("calc.kicker")}</p>
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">{t("calc.lead.title")}</h1>
+            <p className="mt-4 text-lg text-muted-foreground">{t("calc.lead.description")}</p>
+            <Card className="mt-8 border-border">
+              <CardContent className="p-6">
+                <form onSubmit={startSimulation} className="space-y-4">
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="calculator-first-name" className="text-sm font-medium mb-1.5 block">{t("calc.lead.firstName")} *</label>
+                      <input id="calculator-first-name" required maxLength={100} value={leadForm.first_name} onChange={(e) => setLeadForm((f) => ({ ...f, first_name: e.target.value }))} className="w-full h-11 px-3 rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-[#0057B8]" />
+                    </div>
+                    <div>
+                      <label htmlFor="calculator-last-name" className="text-sm font-medium mb-1.5 block">{t("calc.lead.lastName")} *</label>
+                      <input id="calculator-last-name" required maxLength={100} value={leadForm.last_name} onChange={(e) => setLeadForm((f) => ({ ...f, last_name: e.target.value }))} className="w-full h-11 px-3 rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-[#0057B8]" />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="calculator-email" className="text-sm font-medium mb-1.5 block">{t("calc.lead.email")} *</label>
+                    <input id="calculator-email" type="email" required maxLength={254} value={leadForm.email} onChange={(e) => setLeadForm((f) => ({ ...f, email: e.target.value }))} className="w-full h-11 px-3 rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-[#0057B8]" />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {t("calc.lead.privacyNotice")} <Link to="/privacy" className="text-[#0057B8] underline">{t("calc.lead.privacyLink")}</Link>.
+                  </p>
+                  <Button type="submit" disabled={starting} className="bg-[#0057B8] hover:bg-[#004a9c] text-white">
+                    {starting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("calc.lead.starting")}</> : t("calc.lead.start")}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -267,22 +342,48 @@ export default function Calculator() {
                 </CardContent>
               </Card>
 
-              <div className="grid grid-cols-2 gap-2">
-                <Button data-testid="calc-save" onClick={saveEstimate} disabled={saving} variant="outline" className="border-[#0057B8] text-[#0057B8]">
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Save className="h-4 w-4 mr-1.5" />}
-                  {saving ? t("calc.saving") : t("calc.save")}
-                </Button>
-                <Button data-testid="calc-download" onClick={downloadEstimate} variant="outline" className="border-[#0057B8] text-[#0057B8]">
-                  <Download className="h-4 w-4 mr-1.5" /> {t("calc.download")}
-                </Button>
-              </div>
-              <Button data-testid="calc-request-quote" onClick={() => (window.location.href = "/contact")} className="w-full bg-[#0057B8] hover:bg-[#004a9c] text-white">
-                <Send className="h-4 w-4 mr-1.5" /> {t("calc.emailQuote")}
+              <Button data-testid="calc-download" onClick={downloadEstimate} variant="outline" className="w-full border-[#0057B8] text-[#0057B8]">
+                <Download className="h-4 w-4 mr-1.5" /> {t("calc.download")}
+              </Button>
+              <Button data-testid="calc-request-quote" onClick={requestQuote} disabled={finishing} className="w-full bg-[#0057B8] hover:bg-[#004a9c] text-white">
+                {finishing ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Send className="h-4 w-4 mr-1.5" />} {finishing ? t("calc.saving") : t("calc.emailQuote")}
               </Button>
               <p className="text-xs text-muted-foreground text-center">{t("calc.disclaimer")}</p>
             </div>
           </div>
         </div>
+      </section>
+      <section className="estimate-print" aria-hidden="true">
+        <header className="estimate-print-header">
+          <img src={COMPANY.logo} alt="Elitec" className="estimate-print-logo" />
+          <div>
+            <strong>{COMPANY.legalName}</strong><br />
+            {COMPANY.address}<br />
+            {COMPANY.phone} · {COMPANY.email}<br />
+            {t("foot.tva")}: {COMPANY.tva}
+          </div>
+        </header>
+        <h1>{t("calc.yourEstimate")}</h1>
+        <p>{t("calc.lead.pdfIntro")}</p>
+        <p><strong>{t("calc.lead.pdfDate")}:</strong> {new Date().toLocaleDateString(lang === "fr" ? "fr-BE" : "en-GB")}</p>
+        <p><strong>{t("calc.lead.pdfCustomer")}:</strong> {leadForm.first_name} {leadForm.last_name} · {leadForm.email}</p>
+        <hr />
+        <h2>{t("calc.lead.pdfConfiguration")}</h2>
+        <ul>
+          <li>{t("calc.users")}: {users}</li>
+          <li>{t("calc.supportLevel")}: {supportLabels[supportLevel]}</li>
+          <li>{t("calc.coverage")}: {coverageLabels[coverage]}</li>
+          <li>{t("calc.cloud")}: {Object.keys(cloud).filter((key) => cloud[key]).join(", ") || "—"}</li>
+          <li>{t("calc.security")}: {Object.keys(security).filter((key) => security[key]).join(", ") || "—"}</li>
+          <li>{t("calc.servers")}: {servers} · {t("calc.workstations")}: {workstations} · {t("calc.network")}: {networkDevices}</li>
+        </ul>
+        <h2>{t("calc.lead.pdfMonthlyBreakdown")}</h2>
+        <ul>{Object.entries(breakdown).map(([name, value]) => <li key={name}>{name}: {fmt(value)} {t("calc.month")}</li>)}</ul>
+        <div className="estimate-print-total">
+          <strong>{t("calc.yourEstimate")}: {fmt(monthly)} {t("calc.month")}</strong><br />
+          {fmt(annual)} {t("calc.annually")} · {t("calc.recommended")}: {pkg}
+        </div>
+        <p className="estimate-print-disclaimer">{t("calc.disclaimer")}</p>
       </section>
     </div>
   );

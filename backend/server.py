@@ -3,6 +3,7 @@ from starlette.middleware.cors import CORSMiddleware
 import os
 import logging
 import uuid
+from datetime import datetime, timedelta, timezone
 
 from auth import hash_password, verify_password
 from app.database import client, repositories, logger
@@ -93,6 +94,25 @@ SEED_KB = [
 ]
 
 
+async def backfill_retention_expirations(repository):
+    """Apply the 12-month retention deadline to existing records once."""
+    cursor = repository.find(
+        {"retention_expires_at": {"$exists": False}},
+        {"_id": 1, "created_at": 1},
+    )
+    async for document in cursor:
+        try:
+            created_at = datetime.fromisoformat(document["created_at"])
+            if created_at.tzinfo is None:
+                created_at = created_at.replace(tzinfo=timezone.utc)
+        except (KeyError, TypeError, ValueError):
+            created_at = datetime.now(timezone.utc)
+        await repository.update_one(
+            {"_id": document["_id"]},
+            {"$set": {"retention_expires_at": created_at + timedelta(days=365)}},
+        )
+
+
 async def seed_content():
     if await repositories.blog_posts.count_documents({}) == 0:
         for p in SEED_BLOG:
@@ -128,6 +148,10 @@ logging.basicConfig(
 @app.on_event("startup")
 async def on_startup():
     await repositories.users.create_index("email", unique=True)
+    await backfill_retention_expirations(repositories.contacts)
+    await backfill_retention_expirations(repositories.quotes)
+    await repositories.contacts.create_index("retention_expires_at", expireAfterSeconds=0)
+    await repositories.quotes.create_index("retention_expires_at", expireAfterSeconds=0)
     await repositories.tickets.create_index("user_id")
     await repositories.tickets.create_index("created_at")
     await repositories.blog_posts.create_index("created_at")

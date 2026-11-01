@@ -75,6 +75,44 @@ body {
     color: transparent;
 }
 
+.site-page-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    height: 40rem;
+    background: #071525;
+    color: #fff;
+}
+
+.site-page-hero__media,
+.site-page-hero__overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.site-page-hero__media {
+    z-index: 0;
+    background-image: url("./images/fille.png");
+    background-position: center top;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.site-page-hero__overlay {
+    z-index: 1;
+    background: linear-gradient(90deg, rgba(3, 14, 28, 0.86) 0%, rgba(3, 14, 28, 0.63) 58%, rgba(3, 14, 28, 0.43) 100%);
+}
+
+.site-page-hero__content {
+    position: relative;
+    z-index: 2;
+}
+
+.site-page-hero .elitec-gradient-text {
+    background-image: linear-gradient(120deg, #b6e4ff 0%, #79d7f5 55%, #8cf0d5 100%);
+}
+
 .elitec-hero-grid {
     background-image:
         linear-gradient(rgba(0,87,184,0.07) 1px, transparent 1px),
@@ -117,4 +155,9 @@ body {
         border-left-style: inherit; border-right-style: inherit; border-top-style: inherit; border-bottom-style: inherit;
         border-left-color: inherit; border-right-color: inherit; border-top-color: inherit; border-bottom-color: inherit;
     }
+}
+
+@media (max-width: 1023px) {
+    .site-page-hero { height: 46rem; }
+    .site-page-hero__media { background-position: 72% top; }
 }

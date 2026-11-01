@@ -1,18 +1,24 @@
 import {
   Headphones, Cloud, ShieldCheck, Server, Lightbulb, LifeBuoy, Laptop,
-  Factory, ShoppingBag, Truck, GraduationCap, Briefcase,
 } from "lucide-react";
+import logo from "@/images/logo.png";
+import hero from "@/images/fille.png";
 
 export const COMPANY = {
   name: "Elitec",
   legalName: "Elitec",
   tva: "BE1021.922.417",
   address: "Rue Charles Heuze 38, 5060 Auvelais, Belgique",
-  phone: "+32 492 52 08 87",
-  phoneRaw: "+32492520887",
+  // phone: "+32 492 52 08 87",
+  // phoneRaw: "+32492520887",
   email: "Contact@elitec.be",
-  whatsapp: "https://wa.me/0032492520887",
-  logo: "/brand/elitec-logo.png",
+  // whatsapp: "https://wa.me/0032492520887",
+  logo,
+};
+export const IMAGES = {
+  hero,
+  team: "https://images.pexels.com/photos/8867266/pexels-photo-8867266.jpeg",
+  datacenter: "https://images.pexels.com/photos/5480781/pexels-photo-5480781.jpeg",
 };
 
 // Catalogue of services. `titleKey`/`taglineKey`/`itemKeys` map to i18n keys so the UI can render in FR/EN.
@@ -108,15 +114,6 @@ export const SERVICE_CATEGORIES = [
   },
 ];
 
-// Industries — Government, Finance, Healthcare removed as per company focus
-export const INDUSTRIES = [
-  { id: "manufacturing", icon: Factory, nameKey: "ind.manufacturing.name", blurbKey: "ind.manufacturing.blurb" },
-  { id: "retail", icon: ShoppingBag, nameKey: "ind.retail.name", blurbKey: "ind.retail.blurb" },
-  { id: "logistics", icon: Truck, nameKey: "ind.logistics.name", blurbKey: "ind.logistics.blurb" },
-  { id: "education", icon: GraduationCap, nameKey: "ind.education.name", blurbKey: "ind.education.blurb" },
-  { id: "professional", icon: Briefcase, nameKey: "ind.professional.name", blurbKey: "ind.professional.blurb" },
-];
-
 export const PARTNERS = [
   "Microsoft Azure", "Microsoft 365", "Microsoft Entra ID", "Windows 365",
   "Microsoft Teams", "Veeam", "Fortinet", "HPE",
@@ -128,21 +125,9 @@ export const TESTIMONIALS = [
   { quoteKey: "tst.3.q", nameKey: "tst.3.n", roleKey: "tst.3.r" },
 ];
 
-export const CASE_STUDIES = [
-  { id: "manufactura", industryKey: "ind.manufacturing.name", clientKey: "case.1.client", challengeKey: "case.1.challenge", solutionKey: "case.1.solution", resultsKey: "case.1.results", roiKey: "case.1.roi" },
-  { id: "logistex", industryKey: "ind.logistics.name", clientKey: "case.2.client", challengeKey: "case.2.challenge", solutionKey: "case.2.solution", resultsKey: "case.2.results", roiKey: "case.2.roi" },
-  { id: "edunova", industryKey: "ind.education.name", clientKey: "case.3.client", challengeKey: "case.3.challenge", solutionKey: "case.3.solution", resultsKey: "case.3.results", roiKey: "case.3.roi" },
-];
-
 export const WHY_ELITEC = [
   { titleKey: "why.247.t", descKey: "why.247.d", icon: "Clock" },
   { titleKey: "why.experts.t", descKey: "why.experts.d", icon: "Award" },
   { titleKey: "why.pricing.t", descKey: "why.pricing.d", icon: "Wallet" },
   { titleKey: "why.response.t", descKey: "why.response.d", icon: "Zap" },
 ];
-
-export const IMAGES = {
-  hero: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=1600,fit=crop/Y4Lvqlo9pJCjbEj8/it-expert-solutions-_-linkedin-mnlJa7DJxQSxJyXP.png",
-  team: "https://images.pexels.com/photos/8867266/pexels-photo-8867266.jpeg",
-  datacenter: "https://images.pexels.com/photos/5480781/pexels-photo-5480781.jpeg",
-};

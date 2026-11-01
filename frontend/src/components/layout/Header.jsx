@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Moon, Sun, User, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, X, Moon, Sun, LogOut, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useT } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { COMPANY } from "@/lib/data";
+import { FEATURES } from "@/lib/features";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -18,8 +19,7 @@ export default function Header() {
 
   const NAV = [
     { to: "/services", label: t("nav.services") },
-    { to: "/industries", label: t("nav.industries") },
-    { to: "/case-studies", label: t("nav.cases") },
+    { to: "/offers", label: t("nav.offers") },
     { to: "/blog", label: t("nav.blog") },
     { to: "/calculator", label: t("nav.calculator") },
     { to: "/about", label: t("nav.about") },
@@ -51,7 +51,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20 lg:h-24">
           <Link to="/" data-testid="nav-logo" className="flex items-center gap-2">
-            <img src={COMPANY.logo} alt="Elitec" className="h-14 sm:h-16 w-auto" />
+            <img src={COMPANY.logo} alt="Elitec" className={`h-14 sm:h-16 w-auto ${dark ? "brightness-0 invert" : ""}`} />
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1">
@@ -81,7 +81,7 @@ export default function Header() {
             >
               {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
-            {user ? (
+            {FEATURES.authentication && user ? (
               <div className="hidden md:flex items-center gap-2">
                 <Link to={user.role === "admin" ? "/admin" : "/portal"}>
                   <Button data-testid="header-portal-btn" variant="outline" className="border-[#0057B8] text-[#0057B8] hover:bg-[#0057B8]/5">
@@ -95,11 +95,11 @@ export default function Header() {
               </div>
             ) : (
               <div className="hidden md:flex items-center gap-2">
-                <Link to="/login">
+                {FEATURES.authentication && <Link to="/login">
                   <Button data-testid="header-login-btn" variant="ghost" size="sm" className="text-foreground/80">
-                    <User className="h-4 w-4 mr-1.5" /> {t("nav.login")}
+                    {t("nav.login")}
                   </Button>
-                </Link>
+                </Link>}
                 <Link to="/contact">
                   <Button data-testid="header-contact-btn" className="bg-[#0057B8] hover:bg-[#004a9c] text-white">
                     {t("nav.contact")}
@@ -132,7 +132,7 @@ export default function Header() {
                   {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                 </button>
               </div>
-              {user ? (
+              {FEATURES.authentication && user ? (
                 <>
                   <Link to={user.role === "admin" ? "/admin" : "/portal"} className="mt-2">
                     <Button className="w-full bg-[#0057B8] hover:bg-[#004a9c] text-white">
@@ -143,9 +143,9 @@ export default function Header() {
                 </>
               ) : (
                 <>
-                  <Link to="/login" className="mt-2">
+                  {FEATURES.authentication && <Link to="/login" className="mt-2">
                     <Button variant="outline" className="w-full">{t("nav.login")}</Button>
-                  </Link>
+                  </Link>}
                   <Link to="/contact" className="mt-2">
                     <Button className="w-full bg-[#0057B8] hover:bg-[#004a9c] text-white">{t("nav.contact")}</Button>
                   </Link>
